@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ResaleMarket">
+  <rect width="64" height="64" rx="16" fill="#dc143c"/>
+  <path fill="#fff" d="M32 12a4 4 0 0 1 2.83 1.17l16 16a4 4 0 0 1 0 5.66l-14 14a4 4 0 0 1-5.66 0l-16-16A4 4 0 0 1 14 30.34V16a4 4 0 0 1 4-4h14Zm-9 9a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/>
+</svg>
