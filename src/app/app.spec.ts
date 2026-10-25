@@ -40,4 +40,21 @@ describe('App shell and routing', () => {
     expect(TestBed.inject(Router).url).toBe('/this/does/not/exist');
     expect((harness.routeNativeElement as HTMLElement).textContent).toContain('This page could not be found');
   });
+
+  it('lazy-loads the registration page at "/auth/register"', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/auth/register');
+
+    const page = harness.routeNativeElement as HTMLElement;
+    expect(page.querySelector('h1')?.textContent).toContain('Create your account');
+    expect(page.querySelector('form')).not.toBeNull();
+  });
+
+  it('offers a "Create account" call to action in the header', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+
+    const link = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('app-header a[href="/auth/register"]');
+    expect(link?.textContent).toContain('Create account');
+  });
 });

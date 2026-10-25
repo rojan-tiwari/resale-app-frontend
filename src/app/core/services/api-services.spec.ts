@@ -2,7 +2,10 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { API_BASE_URL } from '../config/api-config';
+import { RegisterRequest } from '../models/auth';
 import { SystemInfo } from '../models/system-info';
+import { User } from '../models/user';
+import { AuthApi } from './auth-api';
 import { LocationApi } from './location-api';
 import { SystemApi } from './system-api';
 
@@ -48,5 +51,32 @@ describe('API services', () => {
     controller.expectOne('/test/api/locations/provinces').flush([]);
     controller.expectOne('/test/api/locations/provinces/3/districts').flush([]);
     controller.expectOne('/test/api/locations/districts/25/municipalities').flush([]);
+  });
+
+  it('AuthApi.register posts the request to {base}/auth/register and returns the created user', () => {
+    const request: RegisterRequest = {
+      email: 'sita@example.com',
+      password: 'correct horse',
+      displayName: 'Sita Sharma',
+      phone: null,
+    };
+    const created: User = {
+      id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
+      email: 'sita@example.com',
+      displayName: 'Sita Sharma',
+      phone: null,
+      createdAt: '2026-10-20T08:15:00Z',
+    };
+    let result: User | undefined;
+
+    TestBed.inject(AuthApi)
+      .register(request)
+      .subscribe((value) => (result = value));
+    const http = controller.expectOne('/test/api/auth/register');
+    expect(http.request.method).toBe('POST');
+    expect(http.request.body).toEqual(request);
+    http.flush(created);
+
+    expect(result).toEqual(created);
   });
 });

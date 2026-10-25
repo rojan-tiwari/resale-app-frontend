@@ -4,8 +4,10 @@ import { environment } from '../../../environments/environment';
 import { Logo } from '../../shared/components/logo';
 
 /**
- * Site header. Phase 1 ships the brand and primary navigation; search, location selector, "Post an ad",
- * favourites, messages, notifications and the profile menu are added by the phases that deliver those features.
+ * Site header: the brand, primary navigation and the "Create account" call to action. Sign in, search, location
+ * selector, "Post an ad", favourites, messages, notifications and the profile menu are added by the features that
+ * deliver them (the call to action is replaced by the user menu once people can sign in). On phones the secondary
+ * links are hidden so the call to action fits: the logo already links home.
  */
 @Component({
   selector: 'app-header',
@@ -22,15 +24,16 @@ import { Logo } from '../../shared/components/logo';
           routerLink="/"
           routerLinkActive="bg-brand-50 text-brand-800"
           [routerLinkActiveOptions]="{ exact: true }"
-          class="nav-link"
+          class="nav-link hidden sm:block"
         >
           Home
         </a>
         @if (apiDocsUrl) {
-          <a [href]="apiDocsUrl" target="_blank" rel="noopener" class="nav-link">
+          <a [href]="apiDocsUrl" target="_blank" rel="noopener" class="nav-link hidden sm:block">
             API docs<span class="sr-only"> (opens in a new tab)</span>
           </a>
         }
+        <a routerLink="/auth/register" class="btn btn-primary ml-2">Create account</a>
       </nav>
     </div>
   `,
