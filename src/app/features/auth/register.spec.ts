@@ -14,6 +14,7 @@ const created: User = {
   displayName: 'Sita Sharma',
   phone: null,
   createdAt: '2026-10-20T08:15:00Z',
+  roles: ['ROLE_USER'],
 };
 
 describe('Register', () => {
@@ -64,6 +65,12 @@ describe('Register', () => {
     submitButton().click();
     fixture.detectChanges();
   }
+
+  it('links to the sign-in page for people who already have an account', () => {
+    const link = root.querySelector<HTMLAnchorElement>('a[href="/auth/login"]');
+
+    expect(link?.textContent).toContain('Sign in');
+  });
 
   it('has a label for every field and starts without any error', () => {
     for (const name of ['displayName', 'email', 'phone', 'password', 'confirmPassword']) {
@@ -175,6 +182,7 @@ describe('Register', () => {
     expect(root.textContent).toContain('sita@example.com');
     expect(root.querySelector('[role="status"]')).not.toBeNull();
     expect(root.querySelector('a[href="/"]')?.textContent).toContain('Continue to home');
+    expect(root.querySelector('a[href="/auth/login"]')?.textContent).toContain('Sign in');
     expect(document.activeElement).toBe(heading);
   });
 

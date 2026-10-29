@@ -59,7 +59,7 @@ function describe(field: FieldName, errors: ValidationErrors): string {
   return 'This value is not valid.';
 }
 
-/** Account registration. Creates the account only; signing in is a separate step. */
+/** Account registration. Creates the account only; signing in is a separate step (the success message links to it). */
 @Component({
   selector: 'app-register',
   imports: [ReactiveFormsModule, RouterLink],
@@ -79,7 +79,10 @@ function describe(field: FieldName, errors: ValidationErrors): string {
             <p class="mt-3 text-slate-600">
               Your account for <strong class="font-semibold break-all text-slate-900">{{ user.email }}</strong> is ready.
             </p>
-            <a routerLink="/" class="btn btn-primary mt-8">Continue to home</a>
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <a routerLink="/auth/login" class="btn btn-primary">Sign in</a>
+              <a routerLink="/" class="btn btn-secondary">Continue to home</a>
+            </div>
           </div>
         } @else {
           <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Create your account</h1>
@@ -184,6 +187,13 @@ function describe(field: FieldName, errors: ValidationErrors): string {
               {{ submitting() ? 'Creating account…' : 'Create account' }}
             </button>
           </form>
+
+          <p class="mt-6 text-center text-sm text-slate-600">
+            Already have an account?
+            <a routerLink="/auth/login" class="font-semibold text-brand-700 underline underline-offset-2 hover:text-brand-800">
+              Sign in
+            </a>
+          </p>
         }
       </div>
     </section>

@@ -9,4 +9,6 @@ export interface User {
   readonly phone: string | null;
   /** ISO-8601 instant in UTC. */
   readonly createdAt: string;
+  /** Role names such as `ROLE_USER` and `ROLE_ADMIN`, sorted. For showing or hiding UI only: the server enforces permissions. */
+  readonly roles: readonly string[];
 }
