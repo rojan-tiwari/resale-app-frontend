@@ -172,6 +172,91 @@ describe('Header account area', () => {
       expect(panel()).not.toBeNull();
     });
 
+    function openMenu(): HTMLButtonElement[] {
+      trigger()?.click();
+      fixture.detectChanges();
+      return Array.from(panel()?.querySelectorAll('button') ?? []);
+    }
+
+    it('offers "Sign out of all devices" with an explanation, next to "Sign out"', () => {
+      const [signOut, signOutAll] = openMenu();
+
+      expect(signOut.textContent).toContain('Sign out');
+      expect(signOutAll.textContent).toContain('Sign out of all devices');
+      const hint = panel()?.querySelector(`#${signOutAll.getAttribute('aria-describedby')}`);
+      expect(hint?.textContent).toContain('every phone and computer');
+    });
+
+    it('signs out of all devices, then goes home and shows the sign-in links', () => {
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      const [, signOutAll] = openMenu();
+
+      signOutAll.click();
+      fixture.detectChanges();
+      expect(signOutAll.disabled).toBe(true);
+      expect(signOutAll.textContent).toContain('Signing out');
+      expect(session.isAuthenticated()).toBe(true);
+
+      const request = controller.expectOne('/api/v1/auth/logout-all');
+      expect(request.request.method).toBe('POST');
+      request.flush(null, { status: 204, statusText: 'No Content' });
+      fixture.detectChanges();
+
+      expect(session.isAuthenticated()).toBe(false);
+      expect(navigate).toHaveBeenCalledWith('/');
+      expect(trigger()).toBeNull();
+      expect(link('/auth/login')).not.toBeNull();
+    });
+
+    it('ignores a second click while the request is running', () => {
+      const [, signOutAll] = openMenu();
+
+      signOutAll.click();
+      signOutAll.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      fixture.detectChanges();
+
+      controller
+        .expectOne('/api/v1/auth/logout-all')
+        .flush(null, { status: 204, statusText: 'No Content' });
+    });
+
+    it('stays signed in and says so when "Sign out of all devices" fails', () => {
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      const [, signOutAll] = openMenu();
+
+      signOutAll.click();
+      controller
+        .expectOne('/api/v1/auth/logout-all')
+        .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+      fixture.detectChanges();
+
+      expect(panel()?.querySelector('[role="alert"]')?.textContent).toContain(
+        'Could not sign out of all devices',
+      );
+      expect(panel()?.querySelector('[role="alert"]')?.textContent).toContain(
+        'Cannot reach the server',
+      );
+      expect(signOutAll.disabled).toBe(false);
+      expect(session.isAuthenticated()).toBe(true);
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('forgets an old error when the menu is closed and opened again', () => {
+      const [, signOutAll] = openMenu();
+      signOutAll.click();
+      controller
+        .expectOne('/api/v1/auth/logout-all')
+        .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+      fixture.detectChanges();
+
+      trigger()?.click();
+      fixture.detectChanges();
+      trigger()?.click();
+      fixture.detectChanges();
+
+      expect(panel()?.querySelector('[role="alert"]')).toBeNull();
+    });
+
     it('signs out, tells the server, returns to the home page and shows the sign-in links again', () => {
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
       trigger()?.click();

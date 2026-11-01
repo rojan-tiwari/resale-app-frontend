@@ -233,6 +233,41 @@ describe('AuthSession', () => {
     });
   });
 
+  describe('logoutAll', () => {
+    const LOGOUT_ALL_URL = '/api/v1/auth/logout-all';
+
+    beforeEach(() => {
+      auth.login({ email: 'sita@example.com', password: 'correct horse' }).subscribe();
+      controller.expectOne(LOGIN_URL).flush(session('access-1'));
+    });
+
+    it('signs out only after the server has confirmed that every session ended', () => {
+      let finished = false;
+      auth.logoutAll().subscribe({ complete: () => (finished = true) });
+
+      expect(auth.status()).toBe('authenticated');
+      controller.expectOne(LOGOUT_ALL_URL).flush(null, { status: 204, statusText: 'No Content' });
+
+      expect(finished).toBe(true);
+      expect(auth.status()).toBe('anonymous');
+      expect(auth.user()).toBeNull();
+      expect(auth.accessToken()).toBeNull();
+    });
+
+    it('stays signed in and reports the error when the server could not be reached, because the other devices are not signed out', () => {
+      let caught: unknown;
+      auth.logoutAll().subscribe({ error: (e: unknown) => (caught = e) });
+
+      controller
+        .expectOne(LOGOUT_ALL_URL)
+        .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+
+      expect((caught as ApiError).isNetworkError).toBe(true);
+      expect(auth.status()).toBe('authenticated');
+      expect(auth.accessToken()).toBe('access-1');
+    });
+  });
+
   describe('whenResolved', () => {
     it('waits for the answer, then emits, and starts the restore itself', () => {
       let resolved = false;
