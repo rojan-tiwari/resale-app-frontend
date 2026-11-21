@@ -10,6 +10,11 @@ const sita = {
   email: 'sita.sharma@example.com',
   displayName: 'Sita Sharma',
   phone: null,
+  showPhone: false,
+  bio: null,
+  provinceId: null,
+  districtId: null,
+  municipalityId: null,
   createdAt: '2026-10-20T08:15:00Z',
   roles: ['ROLE_USER'],
 };
@@ -96,6 +101,21 @@ describe('Header account area', () => {
       expect(panel()?.textContent).toContain('Sita Sharma');
       expect(panel()?.textContent).toContain('sita.sharma@example.com');
       expect(panel()?.querySelector('button')?.textContent).toContain('Sign out');
+    });
+
+    it('links to the profile page and closes the menu when the link is used', () => {
+      // This spec has no routes; only the request to navigate matters here.
+      const navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      trigger()?.click();
+      fixture.detectChanges();
+      const profile = panel()?.querySelector<HTMLAnchorElement>('a[href="/profile"]');
+
+      expect(profile?.textContent).toContain('Your profile');
+      profile?.click();
+      fixture.detectChanges();
+
+      expect(navigateByUrl).toHaveBeenCalledTimes(1);
+      expect(panel()).toBeNull();
     });
 
     it('closes on a second click of the button', () => {

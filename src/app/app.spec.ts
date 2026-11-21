@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { Router, provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { App } from './app';
 import { routes } from './app.routes';
@@ -11,7 +11,8 @@ describe('App shell and routing', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter(routes), provideHttpClient(), provideHttpClientTesting()],
+      // The same router features as app.config.ts: route parameters and query parameters reach components as inputs.
+      providers: [provideRouter(routes, withComponentInputBinding()), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 
     // The login and registration routes wait for the start-up session check, so answer it: nobody is signed in.
@@ -74,7 +75,7 @@ describe('App shell and routing', () => {
         accessToken: 'access-1',
         tokenType: 'Bearer',
         expiresIn: 900,
-        user: { id: '1', email: 'sita@example.com', displayName: 'Sita Sharma', phone: null, createdAt: '2026-10-20T08:15:00Z', roles: ['ROLE_USER'] },
+        user: { id: '1', email: 'sita@example.com', displayName: 'Sita Sharma', phone: null, showPhone: false, bio: null, provinceId: null, districtId: null, municipalityId: null, createdAt: '2026-10-20T08:15:00Z', roles: ['ROLE_USER'] },
       });
 
     const harness = await RouterTestingHarness.create();
@@ -107,7 +108,31 @@ describe('App shell and routing', () => {
     expect((harness.routeNativeElement as HTMLElement).textContent).toContain('This link does not work');
   });
 
+  it('sends a visitor who asks for their profile to the login page and brings them back afterwards', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/profile');
 
+    expect(TestBed.inject(Router).url).toBe('/auth/login?returnUrl=%2Fprofile');
+  });
+
+  it('shows a member\'s public profile at "/users/:id" without signing in', async () => {
+    const id = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(`/users/${id}`);
+    TestBed.inject(HttpTestingController)
+      .expectOne(`/api/v1/users/${id}`)
+      .flush({
+        id,
+        displayName: 'Sita Sharma',
+        bio: null,
+        memberSince: '2026-10-20T08:15:00Z',
+        location: { province: null, district: null, municipality: null },
+        phone: null,
+      });
+    harness.detectChanges();
+
+    expect((harness.routeNativeElement as HTMLElement).querySelector('h1')?.textContent).toContain('Sita Sharma');
+  });
 
   it('shows the notification area in the shell, ready to announce messages', async () => {
     const fixture = TestBed.createComponent(App);
