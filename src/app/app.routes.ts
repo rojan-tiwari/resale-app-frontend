@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
 
 /**
  * Every feature is lazy-loaded so the initial bundle stays small. Later phases add routes in the same style and
@@ -14,6 +15,18 @@ export const routes: Routes = [
   {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+  },
+  {
+    // The signed-in person's own account. The guard is a convenience: the API refuses these calls without a token.
+    path: 'profile',
+    canActivate: [authGuard],
+    loadChildren: () => import('./features/profile/profile.routes').then((m) => m.PROFILE_ROUTES),
+  },
+  {
+    // What anyone may see about a member (a seller's profile). Public, like the API endpoint behind it.
+    path: 'users/:id',
+    title: 'Member profile · ResaleMarket',
+    loadComponent: () => import('./features/profile/public-profile').then((m) => m.PublicProfile),
   },
   {
     path: '**',

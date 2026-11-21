@@ -2,7 +2,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api-config';
-import { AuthResponse, LoginRequest, RegisterRequest } from '../models/auth';
+import {
+  AuthResponse,
+  ForgotPasswordRequest,
+  LoginRequest,
+  RegisterRequest,
+  ResetPasswordRequest,
+} from '../models/auth';
 import { User } from '../models/user';
 
 /**
@@ -55,5 +61,21 @@ export class AuthApi {
    */
   logoutAll(): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/logout-all`, null);
+  }
+
+  /**
+   * Asks for a password-reset link to be e-mailed. The server answers the same (202) whether or not the address has an
+   * account, so this never says who is registered. Fails with 400 for a malformed address and 429 when asked too often.
+   */
+  forgotPassword(request: ForgotPasswordRequest): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/forgot-password`, request);
+  }
+
+  /**
+   * Sets a new password with the token from the e-mailed link and ends every session of the account. Fails with 400
+   * and code `INVALID_TOKEN` when the link is unknown, used or expired, with 400 (and `fieldErrors`) for a weak password.
+   */
+  resetPassword(request: ResetPasswordRequest): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/reset-password`, request);
   }
 }

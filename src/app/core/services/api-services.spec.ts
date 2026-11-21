@@ -65,6 +65,11 @@ describe('API services', () => {
       email: 'sita@example.com',
       displayName: 'Sita Sharma',
       phone: null,
+      showPhone: false,
+      bio: null,
+      provinceId: null,
+      districtId: null,
+      municipalityId: null,
       createdAt: '2026-10-20T08:15:00Z',
       roles: ['ROLE_USER'],
     };
@@ -91,6 +96,11 @@ describe('API services', () => {
         email: 'sita@example.com',
         displayName: 'Sita Sharma',
         phone: null,
+        showPhone: false,
+        bio: null,
+        provinceId: null,
+        districtId: null,
+        municipalityId: null,
         createdAt: '2026-10-20T08:15:00Z',
         roles: ['ROLE_USER'],
       },
@@ -153,5 +163,33 @@ describe('API services', () => {
 
       expect(completed).toBe(true);
     });
+  });
+
+  it('AuthApi.forgotPassword posts the address to {base}/auth/forgot-password', () => {
+    let completed = false;
+    TestBed.inject(AuthApi)
+      .forgotPassword({ email: 'sita@example.com' })
+      .subscribe({ complete: () => (completed = true) });
+
+    const http = controller.expectOne('/test/api/auth/forgot-password');
+    expect(http.request.method).toBe('POST');
+    expect(http.request.body).toEqual({ email: 'sita@example.com' });
+    http.flush(null, { status: 202, statusText: 'Accepted' });
+
+    expect(completed).toBe(true);
+  });
+
+  it('AuthApi.resetPassword posts the token and the new password as typed to {base}/auth/reset-password', () => {
+    let completed = false;
+    TestBed.inject(AuthApi)
+      .resetPassword({ token: 'abc123', newPassword: ' a new  password ' })
+      .subscribe({ complete: () => (completed = true) });
+
+    const http = controller.expectOne('/test/api/auth/reset-password');
+    expect(http.request.method).toBe('POST');
+    expect(http.request.body).toEqual({ token: 'abc123', newPassword: ' a new  password ' });
+    http.flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(completed).toBe(true);
   });
 });

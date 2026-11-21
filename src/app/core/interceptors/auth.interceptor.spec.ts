@@ -20,6 +20,11 @@ const session = (accessToken: string): AuthResponse => ({
     email: 'sita@example.com',
     displayName: 'Sita Sharma',
     phone: null,
+    showPhone: false,
+    bio: null,
+    provinceId: null,
+    districtId: null,
+    municipalityId: null,
     createdAt: '2026-10-20T08:15:00Z',
     roles: ['ROLE_USER'],
   },
@@ -233,6 +238,42 @@ describe('authInterceptor', () => {
       );
 
     expect((caught as ApiError).message).toBe('Invalid email or password.');
+    controller.expectNone(REFRESH_URL);
+  });
+
+  it('never sends the access token to the public forgot-password and reset-password calls', () => {
+    signIn();
+
+    http.post('/api/v1/auth/forgot-password', { email: 'sita@example.com' }).subscribe();
+    http
+      .post('/api/v1/auth/reset-password', { token: 'abc', newPassword: 'a brand new password' })
+      .subscribe();
+
+    for (const path of ['forgot-password', 'reset-password']) {
+      const request = controller.expectOne(`/api/v1/auth/${path}`);
+      expect(request.request.headers.has('Authorization')).toBe(false);
+      request.flush(null, { status: 204, statusText: 'No Content' });
+    }
+  });
+
+  it('does not try to renew the session when a reset link is refused', () => {
+    signIn();
+    let caught: unknown;
+    http.post('/api/v1/auth/reset-password', {}).subscribe({ error: (e: unknown) => (caught = e) });
+
+    controller
+      .expectOne('/api/v1/auth/reset-password')
+      .flush(
+        {
+          title: 'Bad Request',
+          status: 400,
+          detail: 'This link is no good.',
+          code: 'INVALID_TOKEN',
+        },
+        { status: 400, statusText: 'Bad Request' },
+      );
+
+    expect((caught as ApiError).isInvalidToken).toBe(true);
     controller.expectNone(REFRESH_URL);
   });
 });

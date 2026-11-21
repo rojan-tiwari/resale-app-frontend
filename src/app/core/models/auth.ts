@@ -29,3 +29,22 @@ export interface AuthResponse {
   readonly expiresIn: number;
   readonly user: User;
 }
+
+/** Body of `POST /api/v1/auth/forgot-password`. */
+export interface ForgotPasswordRequest {
+  readonly email: string;
+}
+
+/** Body of `POST /api/v1/auth/reset-password`: the `token` of the link in the e-mail and the new password. */
+export interface ResetPasswordRequest {
+  readonly token: string;
+  /** Sent as typed (never trimmed). */
+  readonly newPassword: string;
+}
+
+/** Body of `PUT /api/v1/users/me/password`. */
+export interface ChangePasswordRequest {
+  /** Sent as typed (never trimmed). */
+  readonly currentPassword: string;
+  readonly newPassword: string;
+}

@@ -16,6 +16,11 @@ const sita: User = {
   email: 'sita@example.com',
   displayName: 'Sita Sharma',
   phone: null,
+  showPhone: false,
+  bio: null,
+  provinceId: null,
+  districtId: null,
+  municipalityId: null,
   createdAt: '2026-10-20T08:15:00Z',
   roles: ['ROLE_USER'],
 };
@@ -287,6 +292,99 @@ describe('AuthSession', () => {
       auth.whenResolved().subscribe(() => (resolved = true));
 
       expect(resolved).toBe(true);
+    });
+  });
+
+  describe('admin role', () => {
+    const signIn = (user: User) => {
+      auth.login({ email: user.email, password: 'correct horse' }).subscribe();
+      controller.expectOne(LOGIN_URL).flush({ ...session('access-1'), user });
+    };
+
+    it('is false while nobody is signed in', () => {
+      expect(auth.isAdmin()).toBe(false);
+    });
+
+    it('is false for an ordinary account', () => {
+      signIn(sita);
+
+      expect(auth.isAdmin()).toBe(false);
+    });
+
+    it('is true for an account that has the admin role', () => {
+      signIn({ ...sita, roles: ['ROLE_ADMIN', 'ROLE_USER'] });
+
+      expect(auth.isAdmin()).toBe(true);
+    });
+  });
+
+  describe('updateUser', () => {
+    it('replaces the signed-in account, so the header shows a new name at once', () => {
+      auth.login({ email: 'sita@example.com', password: 'correct horse' }).subscribe();
+      controller.expectOne(LOGIN_URL).flush(session('access-1'));
+
+      auth.updateUser({ ...sita, displayName: 'Sita S. Sharma' });
+
+      expect(auth.user()?.displayName).toBe('Sita S. Sharma');
+      expect(auth.isAuthenticated()).toBe(true);
+    });
+
+    it('ignores a late answer when nobody is signed in any more', () => {
+      auth.updateUser(sita);
+
+      expect(auth.user()).toBeNull();
+      expect(auth.status()).toBe('unknown');
+    });
+  });
+
+  describe('changePassword', () => {
+    const CHANGE_URL = '/api/v1/users/me/password';
+    const request = { currentPassword: 'old password', newPassword: 'a brand new password' };
+
+    beforeEach(() => {
+      auth.login({ email: 'sita@example.com', password: 'old password' }).subscribe();
+      controller.expectOne(LOGIN_URL).flush(session('access-1'));
+    });
+
+    it('puts the passwords to the server as typed', () => {
+      auth.changePassword(request).subscribe();
+
+      const http = controller.expectOne(CHANGE_URL);
+      expect(http.request.method).toBe('PUT');
+      expect(http.request.body).toEqual(request);
+      http.flush(null, { status: 204, statusText: 'No Content' });
+    });
+
+    it('signs the screen out once the server has ended every session, this one included', () => {
+      let done = false;
+      auth.changePassword(request).subscribe(() => (done = true));
+      controller.expectOne(CHANGE_URL).flush(null, { status: 204, statusText: 'No Content' });
+
+      expect(done).toBe(true);
+      expect(auth.status()).toBe('anonymous');
+      expect(auth.user()).toBeNull();
+      expect(auth.accessToken()).toBeNull();
+    });
+
+    it('keeps the session when the server refuses, and passes the field error on', () => {
+      let caught: unknown;
+      auth.changePassword(request).subscribe({ error: (e: unknown) => (caught = e) });
+      controller.expectOne(CHANGE_URL).flush(
+        {
+          title: 'Bad Request',
+          status: 400,
+          detail: 'One or more fields are invalid.',
+          code: 'VALIDATION_FAILED',
+          errors: [{ field: 'currentPassword', message: 'This is not your current password.' }],
+        },
+        { status: 400, statusText: 'Bad Request' },
+      );
+
+      expect((caught as ApiError).fieldMessage('currentPassword')).toBe(
+        'This is not your current password.',
+      );
+      expect(auth.isAuthenticated()).toBe(true);
+      expect(auth.accessToken()).toBe('access-1');
     });
   });
 });

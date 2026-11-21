@@ -1,14 +1,15 @@
 import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthSession } from '../../core/auth/auth-session';
 import { toApiError } from '../../core/models/api-error';
 
 /**
- * The signed-in person's menu in the header: their name, email, "Sign out" and "Sign out of all devices". A disclosure button (not an ARIA menu):
+ * The signed-in person's menu in the header: their name, email, a link to their profile, "Sign out" and "Sign out of all devices". A disclosure button (not an ARIA menu):
  * it opens a small panel that stays in the tab order after the button. Escape, a click outside or tabbing away closes it.
  */
 @Component({
   selector: 'app-user-menu',
+  imports: [RouterLink],
   host: {
     class: 'relative ml-2 block',
     '(document:click)': 'closeOnOutsideClick($event)',
@@ -38,7 +39,10 @@ import { toApiError } from '../../core/models/api-error';
       <div id="user-menu-panel" class="card absolute right-0 z-50 mt-2 w-64 p-4">
         <p class="truncate font-semibold text-slate-900">{{ session.user()?.displayName }}</p>
         <p class="mt-0.5 text-sm break-all text-slate-600">{{ session.user()?.email }}</p>
-        <button type="button" class="btn btn-secondary mt-4 w-full" (click)="signOut()">
+        <a routerLink="/profile" class="btn btn-secondary mt-4 w-full" (click)="open.set(false)"
+          >Your profile</a
+        >
+        <button type="button" class="btn btn-secondary mt-2 w-full" (click)="signOut()">
           Sign out
         </button>
         <button

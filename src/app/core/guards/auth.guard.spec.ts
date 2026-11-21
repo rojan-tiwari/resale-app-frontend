@@ -11,7 +11,8 @@ import {
 } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthSession } from '../auth/auth-session';
-import { authGuard, guestGuard } from './auth.guard';
+import { Toasts } from '../notifications/toasts';
+import { adminGuard, authGuard, guestGuard } from './auth.guard';
 
 const REFRESH_URL = '/api/v1/auth/refresh';
 
@@ -24,6 +25,11 @@ const signedInResponse = {
     email: 'sita@example.com',
     displayName: 'Sita Sharma',
     phone: null,
+    showPhone: false,
+    bio: null,
+    provinceId: null,
+    districtId: null,
+    municipalityId: null,
     createdAt: '2026-10-20T08:15:00Z',
     roles: ['ROLE_USER'],
   },
@@ -97,6 +103,51 @@ describe('route guards', () => {
 
       expect(answers).toHaveLength(1);
       expect(serialize(answers[0])).toBe('/');
+    });
+  });
+
+  describe('adminGuard', () => {
+    const signedInAs = (roles: string[]) =>
+      controller
+        .expectOne(REFRESH_URL)
+        .flush({ ...signedInResponse, user: { ...signedInResponse.user, roles } });
+
+    it('sends a visitor to the login page and remembers where they wanted to go', () => {
+      const { answers } = run(adminGuard, '/admin/reports');
+      signedOut();
+
+      expect(answers).toHaveLength(1);
+      expect(serialize(answers[0])).toBe('/auth/login?returnUrl=%2Fadmin%2Freports');
+    });
+
+    it('sends an ordinary member home and says why', () => {
+      const { answers } = run(adminGuard, '/admin/reports');
+      signedInAs(['ROLE_USER']);
+
+      expect(answers).toHaveLength(1);
+      expect(serialize(answers[0])).toBe('/');
+      expect(
+        TestBed.inject(Toasts)
+          .list()
+          .map((toast) => toast.message),
+      ).toEqual(['You do not have access to that page.']);
+    });
+
+    it('lets an administrator through without any message', () => {
+      const { answers } = run(adminGuard, '/admin/reports');
+      signedInAs(['ROLE_ADMIN', 'ROLE_USER']);
+
+      expect(answers).toEqual([true]);
+      expect(TestBed.inject(Toasts).list()).toEqual([]);
+    });
+
+    it('waits for the session to be restored instead of bouncing an administrator', () => {
+      const { answers } = run(adminGuard, '/admin/reports');
+      expect(answers).toEqual([]);
+
+      signedInAs(['ROLE_ADMIN']);
+
+      expect(answers).toEqual([true]);
     });
   });
 });

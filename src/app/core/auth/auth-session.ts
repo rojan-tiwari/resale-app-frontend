@@ -12,15 +12,19 @@ import {
   tap,
 } from 'rxjs';
 import { toApiError } from '../models/api-error';
-import { AuthResponse, LoginRequest } from '../models/auth';
+import { AuthResponse, ChangePasswordRequest, LoginRequest } from '../models/auth';
 import { User } from '../models/user';
 import { AuthApi } from '../services/auth-api';
+import { UserApi } from '../services/user-api';
 
 /**
  * `unknown` until the server has said whether the refresh cookie still holds a session (a few milliseconds after
  * start-up), then `authenticated` or `anonymous`.
  */
 export type SessionStatus = 'unknown' | 'anonymous' | 'authenticated';
+
+/** The role that unlocks the admin area. For showing or hiding UI only: the server checks it on every request. */
+export const ADMIN_ROLE = 'ROLE_ADMIN';
 
 /**
  * Who is signed in. This is the single place that knows the access token.
@@ -34,6 +38,7 @@ export type SessionStatus = 'unknown' | 'anonymous' | 'authenticated';
 @Service()
 export class AuthSession {
   private readonly api = inject(AuthApi);
+  private readonly userApi = inject(UserApi);
 
   private readonly userState = signal<User | null>(null);
   private readonly statusState = signal<SessionStatus>('unknown');
@@ -46,6 +51,7 @@ export class AuthSession {
   readonly user = this.userState.asReadonly();
   readonly status = this.statusState.asReadonly();
   readonly isAuthenticated = computed(() => this.statusState() === 'authenticated');
+  readonly isAdmin = computed(() => this.userState()?.roles.includes(ADMIN_ROLE) ?? false);
 
   /** The current access token, for the interceptor. Not reactive on purpose: nothing should render it. */
   accessToken(): string | null {
@@ -61,6 +67,25 @@ export class AuthSession {
       tap((response) => this.adopt(response)),
       map((response) => response.user),
     );
+  }
+
+  /**
+   * Replaces the signed-in account with a fresher copy, for example after the profile was saved, so the header shows the new
+   * name at once. Ignored when nobody is signed in (a late answer must not sign anyone back in).
+   */
+  updateUser(user: User): void {
+    if (this.statusState() === 'authenticated') {
+      this.userState.set(user);
+    }
+  }
+
+  /**
+   * Changes the password. The server then ends every session of the account, this one included, so on success the screen
+   * becomes signed-out too (the caller sends the person to the login page). Fails with an `ApiError`: 400 with a field
+   * error on `currentPassword` when it is wrong, 429 when tried too often. A failure leaves the session as it was.
+   */
+  changePassword(request: ChangePasswordRequest): Observable<void> {
+    return this.userApi.changePassword(request).pipe(tap(() => this.clear()));
   }
 
   /** Signs out. The screen changes at once; a failed server call is ignored because there is nothing a person could do about it. */

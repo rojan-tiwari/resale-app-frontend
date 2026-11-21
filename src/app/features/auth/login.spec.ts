@@ -18,6 +18,11 @@ const signedIn: AuthResponse = {
     email: 'sita@example.com',
     displayName: 'Sita Sharma',
     phone: null,
+    showPhone: false,
+    bio: null,
+    provinceId: null,
+    districtId: null,
+    municipalityId: null,
     createdAt: '2026-10-20T08:15:00Z',
     roles: ['ROLE_USER'],
   },
@@ -242,6 +247,12 @@ describe('Login', () => {
 
     expect(alert()).toBeNull();
     expect(navigate).toHaveBeenCalledWith('/');
+  });
+
+  it('offers a way to reset a forgotten password', () => {
+    const link = root.querySelector<HTMLAnchorElement>('a[href="/auth/forgot-password"]');
+
+    expect(link?.textContent).toContain('Forgot your password?');
   });
 });
 
