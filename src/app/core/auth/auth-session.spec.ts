@@ -289,4 +289,27 @@ describe('AuthSession', () => {
       expect(resolved).toBe(true);
     });
   });
+
+  describe('admin role', () => {
+    const signIn = (user: User) => {
+      auth.login({ email: user.email, password: 'correct horse' }).subscribe();
+      controller.expectOne(LOGIN_URL).flush({ ...session('access-1'), user });
+    };
+
+    it('is false while nobody is signed in', () => {
+      expect(auth.isAdmin()).toBe(false);
+    });
+
+    it('is false for an ordinary account', () => {
+      signIn(sita);
+
+      expect(auth.isAdmin()).toBe(false);
+    });
+
+    it('is true for an account that has the admin role', () => {
+      signIn({ ...sita, roles: ['ROLE_ADMIN', 'ROLE_USER'] });
+
+      expect(auth.isAdmin()).toBe(true);
+    });
+  });
 });

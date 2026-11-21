@@ -2,10 +2,11 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Footer } from './layout/footer/footer';
 import { Header } from './layout/header/header';
+import { ToastOutlet } from './shared/components/toast-outlet';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer],
+  imports: [RouterOutlet, Header, Footer, ToastOutlet],
   host: { class: 'flex min-h-screen flex-col' },
   template: `
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -14,6 +15,7 @@ import { Header } from './layout/header/header';
       <router-outlet />
     </main>
     <app-footer />
+    <app-toasts />
   `,
 })
 export class App {}
