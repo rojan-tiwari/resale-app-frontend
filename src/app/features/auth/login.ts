@@ -109,6 +109,14 @@ export function safeReturnUrl(value: string | undefined): string {
             <p id="login-password-error" class="field-error" [hidden]="!passwordError">
               {{ passwordError }}
             </p>
+            <p class="mt-2 text-sm">
+              <a
+                routerLink="/auth/forgot-password"
+                class="font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800"
+              >
+                Forgot your password?
+              </a>
+            </p>
           </div>
 
           <button type="submit" class="btn btn-primary w-full" [disabled]="submitting()">

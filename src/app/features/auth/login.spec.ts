@@ -243,6 +243,12 @@ describe('Login', () => {
     expect(alert()).toBeNull();
     expect(navigate).toHaveBeenCalledWith('/');
   });
+
+  it('offers a way to reset a forgotten password', () => {
+    const link = root.querySelector<HTMLAnchorElement>('a[href="/auth/forgot-password"]');
+
+    expect(link?.textContent).toContain('Forgot your password?');
+  });
 });
 
 describe('safeReturnUrl', () => {

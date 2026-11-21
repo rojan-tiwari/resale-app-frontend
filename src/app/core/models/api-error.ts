@@ -66,6 +66,16 @@ export class ApiError extends Error {
     return this.status === 404;
   }
 
+  /** A rate limit was hit; the message says how long to wait. */
+  get isTooManyRequests(): boolean {
+    return this.status === 429;
+  }
+
+  /** A link token (password reset) is unknown, already used or expired. */
+  get isInvalidToken(): boolean {
+    return this.code === 'INVALID_TOKEN';
+  }
+
   /** Message for a specific form field, if the server reported one. */
   fieldMessage(field: string): string | undefined {
     return this.fieldErrors.find((e) => e.field === field)?.message;
