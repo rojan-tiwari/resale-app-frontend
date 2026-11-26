@@ -19,6 +19,21 @@ export const routes: Routes = [
     loadComponent: () => import('./features/search/search').then((m) => m.Search),
   },
   {
+    path: 'categories',
+    pathMatch: 'full',
+    title: 'All categories · ResaleMarket',
+    loadComponent: () => import('./features/categories/categories').then((m) => m.Categories),
+  },
+  {
+    // A category (and optionally a subcategory) is the search page with that category already chosen.
+    path: 'categories/:slug',
+    loadComponent: () => import('./features/search/search').then((m) => m.Search),
+  },
+  {
+    path: 'categories/:slug/:sub',
+    loadComponent: () => import('./features/search/search').then((m) => m.Search),
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
