@@ -34,6 +34,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/search/search').then((m) => m.Search),
   },
   {
+    path: 'favorites',
+    canActivate: [authGuard],
+    title: 'Your favourites · ResaleMarket',
+    loadComponent: () => import('./features/favorites/favorites').then((m) => m.Favorites),
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
