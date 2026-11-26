@@ -2,6 +2,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import {
   emailAddress,
   fieldsMatch,
+  maxDecimals,
   maxUtf8Bytes,
   nepalMobile,
   trimmedLength,
@@ -105,6 +106,35 @@ describe('form validators', () => {
       const form = group('secret-1', 'secret-1');
       form.controls.password.setValue('changed');
       expect(form.errors).toEqual({ mismatch: true });
+    });
+  });
+
+  describe('maxDecimals', () => {
+    const check = (value: unknown) => maxDecimals(2)(new FormControl(value));
+
+    it('accepts whole numbers and up to two decimals', () => {
+      for (const value of [0, 1, 1250, 1250.5, 1250.55, 0.01, 10.1, 19.99, 99999999.99]) {
+        expect(check(value), String(value)).toBeNull();
+      }
+    });
+
+    it('does not reject a correctly typed value because of floating-point noise', () => {
+      // 1.005 * 100 is 100.49999999999999 in floating point; 10.1 * 100 is 1010.0000000000001: both must be judged on what was typed.
+      expect(check(10.1)).toBeNull();
+      expect(check(4.35)).toBeNull();
+      expect(check(1.15)).toBeNull();
+    });
+
+    it('rejects a third decimal', () => {
+      expect(check(1.005)).toEqual({ decimals: { max: 2 } });
+      expect(check(10.123)).toEqual({ decimals: { max: 2 } });
+      expect(check(0.001)).toEqual({ decimals: { max: 2 } });
+    });
+
+    it('ignores empty and non-numeric values so it can be combined with required', () => {
+      for (const value of [null, undefined, '', 'abc', NaN, Infinity]) {
+        expect(check(value), String(value)).toBeNull();
+      }
     });
   });
 });

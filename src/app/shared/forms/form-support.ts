@@ -32,6 +32,16 @@ export function describeValidationErrors(
   if (maxBytes) {
     return `That password is too long. Use at most ${maxBytes.max} bytes (each Nepali letter counts as 3).`;
   }
+  if (errors['min']) {
+    return 'Enter 0 or more.';
+  }
+  if (errors['max']) {
+    return 'That number is too large.';
+  }
+  const decimals = errors['decimals'] as { max: number } | undefined;
+  if (decimals) {
+    return `Use at most ${decimals.max} decimal places, like 1250.50.`;
+  }
   if (errors['nepalMobile']) {
     return 'Enter a Nepali mobile number, like 9812345678.';
   }
