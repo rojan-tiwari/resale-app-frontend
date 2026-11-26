@@ -13,6 +13,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/home/home').then((m) => m.Home),
   },
   {
+    // The Phase 1 connectivity check (browser -> API -> database). Public, like the ping it calls.
+    path: 'status',
+    title: 'Platform status · ResaleMarket',
+    loadComponent: () => import('./features/home/status').then((m) => m.Status),
+  },
+  {
     // Search and filters. The whole search is in the address (?q=...&minPrice=...), so it can be shared.
     path: 'search',
     title: 'Search · ResaleMarket',
