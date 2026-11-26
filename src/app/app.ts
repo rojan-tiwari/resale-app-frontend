@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { FavoritesStore } from './core/favorites/favorites-store';
 import { Footer } from './layout/footer/footer';
 import { Header } from './layout/header/header';
 import { ToastOutlet } from './shared/components/toast-outlet';
@@ -18,4 +19,7 @@ import { ToastOutlet } from './shared/components/toast-outlet';
     <app-toasts />
   `,
 })
-export class App {}
+export class App {
+  // Created right away so it starts loading the saved ads as soon as a session is restored, whichever page is open first.
+  protected readonly favorites = inject(FavoritesStore);
+}
