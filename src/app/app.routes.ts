@@ -29,6 +29,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/profile/public-profile').then((m) => m.PublicProfile),
   },
   {
+    // Ads: reading one is public; posting, editing and "my ads" need a sign-in (see listings.routes.ts).
+    path: 'listings',
+    loadChildren: () =>
+      import('./features/listings/listings.routes').then((m) => m.LISTINGS_ROUTES),
+  },
+  {
     path: '**',
     title: 'Page not found · ResaleMarket',
     loadComponent: () => import('./features/not-found/not-found').then((m) => m.NotFound),

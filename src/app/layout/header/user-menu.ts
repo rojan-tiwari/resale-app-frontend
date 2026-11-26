@@ -4,14 +4,14 @@ import { AuthSession } from '../../core/auth/auth-session';
 import { toApiError } from '../../core/models/api-error';
 
 /**
- * The signed-in person's menu in the header: their name, email, a link to their profile, "Sign out" and "Sign out of all devices". A disclosure button (not an ARIA menu):
+ * The signed-in person's menu in the header: their name, email, links to their ads and profile, "Sign out" and "Sign out of all devices". A disclosure button (not an ARIA menu):
  * it opens a small panel that stays in the tab order after the button. Escape, a click outside or tabbing away closes it.
  */
 @Component({
   selector: 'app-user-menu',
   imports: [RouterLink],
   host: {
-    class: 'relative ml-2 block',
+    class: 'relative ml-1 block sm:ml-2',
     '(document:click)': 'closeOnOutsideClick($event)',
     // On the document, not the host: Safari does not focus a button that was clicked, so Escape would never reach the host.
     '(document:keydown.escape)': 'closeAndRefocus()',
@@ -21,7 +21,7 @@ import { toApiError } from '../../core/models/api-error';
     <button
       #trigger
       type="button"
-      class="btn btn-ghost"
+      class="btn btn-ghost max-sm:px-2"
       aria-controls="user-menu-panel"
       [attr.aria-expanded]="open()"
       (click)="toggle()"
@@ -39,7 +39,13 @@ import { toApiError } from '../../core/models/api-error';
       <div id="user-menu-panel" class="card absolute right-0 z-50 mt-2 w-64 p-4">
         <p class="truncate font-semibold text-slate-900">{{ session.user()?.displayName }}</p>
         <p class="mt-0.5 text-sm break-all text-slate-600">{{ session.user()?.email }}</p>
-        <a routerLink="/profile" class="btn btn-secondary mt-4 w-full" (click)="open.set(false)"
+        <a
+          routerLink="/listings/mine"
+          class="btn btn-secondary mt-4 w-full"
+          (click)="open.set(false)"
+          >My ads</a
+        >
+        <a routerLink="/profile" class="btn btn-secondary mt-2 w-full" (click)="open.set(false)"
           >Your profile</a
         >
         <button type="button" class="btn btn-secondary mt-2 w-full" (click)="signOut()">
