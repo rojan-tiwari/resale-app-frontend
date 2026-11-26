@@ -14,7 +14,10 @@ import { UserMenu } from './user-menu';
 @Component({
   selector: 'app-header',
   imports: [RouterLink, RouterLinkActive, Logo, UserMenu],
-  host: { role: 'banner', class: 'sticky top-0 z-40 block border-b border-slate-200 bg-white/90 backdrop-blur' },
+  host: {
+    role: 'banner',
+    class: 'sticky top-0 z-40 block border-b border-slate-200 bg-white/90 backdrop-blur',
+  },
   template: `
     <div class="container-page flex h-16 items-center justify-between gap-4">
       <a routerLink="/" class="rounded-lg" aria-label="ResaleMarket, go to the home page">
@@ -41,7 +44,9 @@ import { UserMenu } from './user-menu';
           }
           @case ('anonymous') {
             <a routerLink="/auth/login" class="nav-link">Sign in</a>
-            <a routerLink="/auth/register" class="btn btn-primary ml-2 max-sm:hidden">Create account</a>
+            <a routerLink="/auth/register" class="btn btn-primary ml-2 max-sm:hidden"
+              >Create account</a
+            >
           }
           @default {
             <!-- Placeholder while the session is being restored, so the header does not jump. -->

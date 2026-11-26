@@ -90,12 +90,10 @@ describe('PublicProfile', () => {
   });
 
   it('does not say the same place twice when a municipality is named like its district', () => {
-    controller
-      .expectOne(url())
-      .flush({
-        ...member,
-        location: { province: 'Bagmati', district: 'Kathmandu', municipality: 'Kathmandu' },
-      });
+    controller.expectOne(url()).flush({
+      ...member,
+      location: { province: 'Bagmati', district: 'Kathmandu', municipality: 'Kathmandu' },
+    });
     fixture.detectChanges();
 
     expect(root.textContent).toContain('Kathmandu, Bagmati');
@@ -103,13 +101,11 @@ describe('PublicProfile', () => {
   });
 
   it('leaves out the place and the bio when there are none', () => {
-    controller
-      .expectOne(url())
-      .flush({
-        ...member,
-        bio: null,
-        location: { province: null, district: null, municipality: null },
-      });
+    controller.expectOne(url()).flush({
+      ...member,
+      bio: null,
+      location: { province: null, district: null, municipality: null },
+    });
     fixture.detectChanges();
 
     expect(root.textContent).not.toContain('Place');
@@ -124,17 +120,15 @@ describe('PublicProfile', () => {
   });
 
   it('says the member was not found, for a 404, with a way home', () => {
-    controller
-      .expectOne(url())
-      .flush(
-        {
-          title: 'Not Found',
-          status: 404,
-          detail: "User with id 'x' was not found.",
-          code: 'NOT_FOUND',
-        },
-        { status: 404, statusText: 'Not Found' },
-      );
+    controller.expectOne(url()).flush(
+      {
+        title: 'Not Found',
+        status: 404,
+        detail: "User with id 'x' was not found.",
+        code: 'NOT_FOUND',
+      },
+      { status: 404, statusText: 'Not Found' },
+    );
     fixture.detectChanges();
 
     expect(root.querySelector('[role="alert"]')?.textContent).toContain('Member not found');
@@ -143,16 +137,14 @@ describe('PublicProfile', () => {
   });
 
   it('offers to try again after another failure', () => {
-    controller
-      .expectOne(url())
-      .flush(
-        {
-          title: 'Internal Server Error',
-          status: 500,
-          detail: 'An unexpected error occurred. Please try again later.',
-        },
-        { status: 500, statusText: 'Internal Server Error' },
-      );
+    controller.expectOne(url()).flush(
+      {
+        title: 'Internal Server Error',
+        status: 500,
+        detail: 'An unexpected error occurred. Please try again later.',
+      },
+      { status: 500, statusText: 'Internal Server Error' },
+    );
     fixture.detectChanges();
     expect(root.querySelector('[role="alert"]')?.textContent).toContain(
       'An unexpected error occurred',

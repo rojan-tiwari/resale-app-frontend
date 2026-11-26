@@ -14,7 +14,11 @@ describe('API services', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), { provide: API_BASE_URL, useValue: '/test/api' }],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: API_BASE_URL, useValue: '/test/api' },
+      ],
     });
     controller = TestBed.inject(HttpTestingController);
   });

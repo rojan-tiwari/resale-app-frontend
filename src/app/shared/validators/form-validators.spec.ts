@@ -1,15 +1,27 @@
 import { FormControl, FormGroup } from '@angular/forms';
-import { emailAddress, fieldsMatch, maxUtf8Bytes, nepalMobile, trimmedLength } from './form-validators';
+import {
+  emailAddress,
+  fieldsMatch,
+  maxUtf8Bytes,
+  nepalMobile,
+  trimmedLength,
+} from './form-validators';
 
 describe('form validators', () => {
   describe('emailAddress', () => {
-    it.each(['sita@example.com', 'sita.sharma+ads@mail.example.com.np', '  sita@example.com  '])('accepts %j', (value) => {
-      expect(emailAddress(new FormControl(value))).toBeNull();
-    });
+    it.each(['sita@example.com', 'sita.sharma+ads@mail.example.com.np', '  sita@example.com  '])(
+      'accepts %j',
+      (value) => {
+        expect(emailAddress(new FormControl(value))).toBeNull();
+      },
+    );
 
-    it.each(['plain', 'a@b', '@example.com', 'sita@', 'two words@example.com'])('rejects %j', (value) => {
-      expect(emailAddress(new FormControl(value))).toEqual({ email: true });
-    });
+    it.each(['plain', 'a@b', '@example.com', 'sita@', 'two words@example.com'])(
+      'rejects %j',
+      (value) => {
+        expect(emailAddress(new FormControl(value))).toEqual({ email: true });
+      },
+    );
 
     it('ignores empty values so that `required` stays in charge of them', () => {
       expect(emailAddress(new FormControl(''))).toBeNull();
@@ -22,8 +34,12 @@ describe('form validators', () => {
 
     it('measures the trimmed text, the same way the server does', () => {
       expect(validator(new FormControl('  ab  '))).toBeNull();
-      expect(validator(new FormControl(' a '))).toEqual({ minlength: { requiredLength: 2, actualLength: 1 } });
-      expect(validator(new FormControl('abcdef'))).toEqual({ maxlength: { requiredLength: 5, actualLength: 6 } });
+      expect(validator(new FormControl(' a '))).toEqual({
+        minlength: { requiredLength: 2, actualLength: 1 },
+      });
+      expect(validator(new FormControl('abcdef'))).toEqual({
+        maxlength: { requiredLength: 5, actualLength: 6 },
+      });
     });
 
     it('ignores empty values', () => {
@@ -36,12 +52,16 @@ describe('form validators', () => {
 
     it('accepts exactly 72 bytes and rejects 73', () => {
       expect(validator(new FormControl('a'.repeat(72)))).toBeNull();
-      expect(validator(new FormControl('a'.repeat(73)))).toEqual({ maxBytes: { max: 72, actual: 73 } });
+      expect(validator(new FormControl('a'.repeat(73)))).toEqual({
+        maxBytes: { max: 72, actual: 73 },
+      });
     });
 
     it('counts bytes, not characters: a Nepali letter takes 3', () => {
       expect(validator(new FormControl('क'.repeat(24)))).toBeNull();
-      expect(validator(new FormControl('क'.repeat(25)))).toEqual({ maxBytes: { max: 72, actual: 75 } });
+      expect(validator(new FormControl('क'.repeat(25)))).toEqual({
+        maxBytes: { max: 72, actual: 75 },
+      });
     });
   });
 
@@ -50,9 +70,12 @@ describe('form validators', () => {
       expect(nepalMobile(new FormControl(value))).toBeNull();
     });
 
-    it.each(['123', '9512345678', '98123456789', '+9769812345678', '98 12345678', '९८१२३४५६७८'])('rejects %j', (value) => {
-      expect(nepalMobile(new FormControl(value))).toEqual({ nepalMobile: true });
-    });
+    it.each(['123', '9512345678', '98123456789', '+9769812345678', '98 12345678', '९८१२३४५६७८'])(
+      'rejects %j',
+      (value) => {
+        expect(nepalMobile(new FormControl(value))).toEqual({ nepalMobile: true });
+      },
+    );
 
     it('is optional', () => {
       expect(nepalMobile(new FormControl(''))).toBeNull();
@@ -61,7 +84,10 @@ describe('form validators', () => {
 
   describe('fieldsMatch', () => {
     const group = (password: string, confirm: string) =>
-      new FormGroup({ password: new FormControl(password), confirm: new FormControl(confirm) }, fieldsMatch('password', 'confirm'));
+      new FormGroup(
+        { password: new FormControl(password), confirm: new FormControl(confirm) },
+        fieldsMatch('password', 'confirm'),
+      );
 
     it('flags differing values', () => {
       expect(group('secret-1', 'secret-2').errors).toEqual({ mismatch: true });

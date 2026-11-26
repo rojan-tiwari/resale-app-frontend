@@ -83,7 +83,11 @@ export class ApiError extends Error {
 }
 
 function isProblemDetail(body: unknown): body is ProblemDetail {
-  return typeof body === 'object' && body !== null && ('title' in body || 'status' in body || 'detail' in body);
+  return (
+    typeof body === 'object' &&
+    body !== null &&
+    ('title' in body || 'status' in body || 'detail' in body)
+  );
 }
 
 /** Normalises anything thrown by an HTTP call into an {@link ApiError}. */

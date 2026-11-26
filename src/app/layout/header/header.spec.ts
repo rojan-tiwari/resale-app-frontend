@@ -105,7 +105,9 @@ describe('Header account area', () => {
 
     it('links to the profile page and closes the menu when the link is used', () => {
       // This spec has no routes; only the request to navigate matters here.
-      const navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      const navigateByUrl = vi
+        .spyOn(TestBed.inject(Router), 'navigateByUrl')
+        .mockResolvedValue(true);
       trigger()?.click();
       fixture.detectChanges();
       const profile = panel()?.querySelector<HTMLAnchorElement>('a[href="/profile"]');

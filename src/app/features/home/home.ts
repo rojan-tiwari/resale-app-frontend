@@ -16,7 +16,8 @@ import { SystemStatus } from './system-status';
           Buy and sell pre-loved things, close to home.
         </h1>
         <p class="mt-4 max-w-2xl text-lg text-slate-600">
-          Phones, laptops, vehicles, furniture and more — priced in NPR and listed by province, district and city.
+          Phones, laptops, vehicles, furniture and more — priced in NPR and listed by province,
+          district and city.
         </p>
       </div>
     </section>
@@ -24,7 +25,8 @@ import { SystemStatus } from './system-status';
     <section class="container-page pb-16">
       <app-system-status />
       <p class="mt-4 text-sm text-slate-600">
-        This is the foundation build. Accounts, listings, search and messaging arrive in the next phases.
+        This is the foundation build. Accounts, listings, search and messaging arrive in the next
+        phases.
       </p>
     </section>
   `,
