@@ -2,10 +2,13 @@ import { Component, computed, effect, inject, input, signal } from '@angular/cor
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import { catchError, map, of, startWith, switchMap } from 'rxjs';
+import { EMPTY, catchError, map, of, startWith, switchMap, tap } from 'rxjs';
 import { ApiError, toApiError } from '../../core/models/api-error';
 import { PublicUser } from '../../core/models/user';
+import { ListingApi } from '../../core/services/listing-api';
 import { UserApi } from '../../core/services/user-api';
+import { ListState, ListingList } from '../../shared/components/listing-list';
+import { Pager } from '../../shared/components/pager';
 import { NepalDatePipe } from '../../shared/pipes/nepal-date-pipe';
 
 type State =
@@ -14,15 +17,17 @@ type State =
   | { readonly kind: 'error'; readonly error: ApiError };
 
 const LOADING: State = { kind: 'loading' };
+const ADS_PAGE_SIZE = 12;
 
 /**
  * What anyone may see about a member (`/users/:id`), such as the seller of an ad: name, a few words about them, where they
  * are and since when they are a member, and the phone number only if its owner chose to show it. Never an e-mail address.
+ * Below that, the member's live ads.
  * A member that is unknown, suspended or deleted is shown as "not found", which is also what the server says.
  */
 @Component({
   selector: 'app-public-profile',
-  imports: [RouterLink, NepalDatePipe],
+  imports: [RouterLink, NepalDatePipe, ListingList, Pager],
   template: `
     <section class="container-page py-10 sm:py-14">
       <div class="mx-auto w-full max-w-xl">
@@ -111,11 +116,32 @@ const LOADING: State = { kind: 'loading' };
           }
         }
       </div>
+
+      @if (member(); as person) {
+        <section class="mx-auto mt-10 w-full max-w-5xl" aria-labelledby="member-ads-heading">
+          <h2 id="member-ads-heading" class="mb-4 text-xl font-bold tracking-tight text-slate-900">
+            Ads by {{ person.displayName }}
+          </h2>
+          <app-listing-list
+            [state]="ads()"
+            emptyText="This member has no live ads right now."
+            loadingLabel="Loading this member's ads"
+            (retry)="retryAds()"
+          />
+          <app-pager
+            class="mt-6"
+            [page]="adsPage()"
+            [totalPages]="adsTotalPages()"
+            (pageChange)="adsPage.set($event)"
+          />
+        </section>
+      }
     </section>
   `,
 })
 export class PublicProfile {
   private readonly userApi = inject(UserApi);
+  private readonly listingApi = inject(ListingApi);
   private readonly title = inject(Title);
 
   /** Bound from the `:id` route parameter (router input binding). */
@@ -135,6 +161,38 @@ export class PublicProfile {
       ),
     ),
     { initialValue: LOADING },
+  );
+
+  protected readonly adsPage = signal(0);
+  protected readonly adsTotalPages = signal(0);
+  private readonly adsAttempt = signal(0);
+
+  /**
+   * The member's live ads. Asked for only once the profile has loaded: for a member that does not exist there is nothing to
+   * ask, and one failed request is enough.
+   */
+  protected readonly ads = toSignal(
+    toObservable(
+      computed(() => ({
+        id: this.member() === null ? null : this.id(),
+        page: this.adsPage(),
+        attempt: this.adsAttempt(),
+      })),
+    ).pipe(
+      switchMap(({ id, page }) =>
+        id === null
+          ? EMPTY
+          : this.listingApi.ofSeller(id, { page, size: ADS_PAGE_SIZE }).pipe(
+              tap((result) => this.adsTotalPages.set(result.totalPages)),
+              map((result): ListState => ({ kind: 'ready', items: result.content })),
+              catchError((error: unknown) =>
+                of<ListState>({ kind: 'error', message: toApiError(error).message }),
+              ),
+              startWith<ListState>({ kind: 'loading' }),
+            ),
+      ),
+    ),
+    { initialValue: { kind: 'loading' } as ListState },
   );
 
   protected readonly member = computed(() => {
@@ -159,6 +217,10 @@ export class PublicProfile {
 
   protected retry(): void {
     this.attempt.update((count) => count + 1);
+  }
+
+  protected retryAds(): void {
+    this.adsAttempt.update((count) => count + 1);
   }
 
   protected initialOf(name: string): string {
