@@ -13,6 +13,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/home/home').then((m) => m.Home),
   },
   {
+    // Search and filters. The whole search is in the address (?q=...&minPrice=...), so it can be shared.
+    path: 'search',
+    title: 'Search · ResaleMarket',
+    loadComponent: () => import('./features/search/search').then((m) => m.Search),
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
