@@ -13,6 +13,11 @@ const created: User = {
   email: 'sita@example.com',
   displayName: 'Sita Sharma',
   phone: null,
+  showPhone: false,
+  bio: null,
+  provinceId: null,
+  districtId: null,
+  municipalityId: null,
   createdAt: '2026-10-20T08:15:00Z',
   roles: ['ROLE_USER'],
 };

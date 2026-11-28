@@ -14,7 +14,11 @@ describe('API services', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), { provide: API_BASE_URL, useValue: '/test/api' }],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: API_BASE_URL, useValue: '/test/api' },
+      ],
     });
     controller = TestBed.inject(HttpTestingController);
   });
@@ -65,6 +69,11 @@ describe('API services', () => {
       email: 'sita@example.com',
       displayName: 'Sita Sharma',
       phone: null,
+      showPhone: false,
+      bio: null,
+      provinceId: null,
+      districtId: null,
+      municipalityId: null,
       createdAt: '2026-10-20T08:15:00Z',
       roles: ['ROLE_USER'],
     };
@@ -91,6 +100,11 @@ describe('API services', () => {
         email: 'sita@example.com',
         displayName: 'Sita Sharma',
         phone: null,
+        showPhone: false,
+        bio: null,
+        provinceId: null,
+        districtId: null,
+        municipalityId: null,
         createdAt: '2026-10-20T08:15:00Z',
         roles: ['ROLE_USER'],
       },

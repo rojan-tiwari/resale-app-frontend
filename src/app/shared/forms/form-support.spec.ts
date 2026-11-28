@@ -38,6 +38,16 @@ describe('describeValidationErrors', () => {
     expect(describeValidationErrors({ somethingElse: true }, 'x')).toBe('This value is not valid.');
   });
 
+  it('describes number limits and decimals (a price)', () => {
+    expect(describeValidationErrors({ min: { min: 0, actual: -1 } }, 'x')).toBe('Enter 0 or more.');
+    expect(describeValidationErrors({ max: { max: 9, actual: 10 } }, 'x')).toBe(
+      'That number is too large.',
+    );
+    expect(describeValidationErrors({ decimals: { max: 2 } }, 'x')).toBe(
+      'Use at most 2 decimal places, like 1250.50.',
+    );
+  });
+
   it('lets the message of the server win over every other', () => {
     expect(
       describeValidationErrors({ required: true, server: 'Already taken.' }, 'Enter it.'),

@@ -29,7 +29,9 @@ describe('toApiError', () => {
   });
 
   it('treats status 0 as a network error', () => {
-    const error = toApiError(new HttpErrorResponse({ status: 0, error: new ProgressEvent('error') }));
+    const error = toApiError(
+      new HttpErrorResponse({ status: 0, error: new ProgressEvent('error') }),
+    );
 
     expect(error.isNetworkError).toBe(true);
     expect(error.code).toBe('NETWORK_ERROR');
@@ -37,7 +39,11 @@ describe('toApiError', () => {
 
   it('falls back gracefully when the body is not a problem detail (e.g. a proxy error page)', () => {
     const error = toApiError(
-      new HttpErrorResponse({ status: 502, statusText: 'Bad Gateway', error: 'upstream connect error' }),
+      new HttpErrorResponse({
+        status: 502,
+        statusText: 'Bad Gateway',
+        error: 'upstream connect error',
+      }),
     );
 
     expect(error.status).toBe(502);
@@ -46,9 +52,18 @@ describe('toApiError', () => {
   });
 
   it('exposes convenience flags', () => {
-    expect(toApiError(new HttpErrorResponse({ status: 401, error: { title: 'x', status: 401 } })).isUnauthorized).toBe(true);
-    expect(toApiError(new HttpErrorResponse({ status: 403, error: { title: 'x', status: 403 } })).isForbidden).toBe(true);
-    expect(toApiError(new HttpErrorResponse({ status: 404, error: { title: 'x', status: 404 } })).isNotFound).toBe(true);
+    expect(
+      toApiError(new HttpErrorResponse({ status: 401, error: { title: 'x', status: 401 } }))
+        .isUnauthorized,
+    ).toBe(true);
+    expect(
+      toApiError(new HttpErrorResponse({ status: 403, error: { title: 'x', status: 403 } }))
+        .isForbidden,
+    ).toBe(true);
+    expect(
+      toApiError(new HttpErrorResponse({ status: 404, error: { title: 'x', status: 404 } }))
+        .isNotFound,
+    ).toBe(true);
   });
 
   it('returns an existing ApiError unchanged and wraps unknown values', () => {

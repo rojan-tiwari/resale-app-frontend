@@ -10,6 +10,11 @@ const sita = {
   email: 'sita.sharma@example.com',
   displayName: 'Sita Sharma',
   phone: null,
+  showPhone: false,
+  bio: null,
+  provinceId: null,
+  districtId: null,
+  municipalityId: null,
   createdAt: '2026-10-20T08:15:00Z',
   roles: ['ROLE_USER'],
 };
@@ -29,6 +34,9 @@ describe('Header account area', () => {
     session = TestBed.inject(AuthSession);
     fixture = TestBed.createComponent(Header);
     root = fixture.nativeElement as HTMLElement;
+    fixture.detectChanges();
+    // The category strip asks for the categories as soon as the header exists.
+    controller.expectOne('/api/v1/categories').flush([]);
     fixture.detectChanges();
   });
 
@@ -53,6 +61,13 @@ describe('Header account area', () => {
       .expectOne('/api/v1/auth/refresh')
       .flush({ accessToken: 'access-1', tokenType: 'Bearer', expiresIn: 900, user: sita });
     fixture.detectChanges();
+    answerFavoriteIds();
+  }
+
+  /** A signed-in session makes the favourites store load the ids of the saved ads (for the hearts and the number beside the heart icon). */
+  function answerFavoriteIds(ids: string[] = []): void {
+    controller.expectOne('/api/v1/favorites/ids').flush(ids);
+    fixture.detectChanges();
   }
 
   it('shows a neutral placeholder, and neither sign-in nor account links, until the session is known', () => {
@@ -69,6 +84,16 @@ describe('Header account area', () => {
     expect(link('/auth/register')?.textContent).toContain('Create account');
     expect(trigger()).toBeNull();
     expect(root.querySelector('.skeleton')).toBeNull();
+  });
+
+  it('invites everybody to post an ad: a visitor is sent to sign in by the page guard, and brought back', () => {
+    startAnonymous();
+    expect(link('/listings/new')?.textContent).toContain('Post an ad');
+    expect(link('/listings/new')?.className).toContain('btn-primary');
+
+    TestBed.inject(AuthSession).updateUser(sita);
+    fixture.detectChanges();
+    expect(link('/listings/new')?.textContent).toContain('Post an ad');
   });
 
   it('shows the user menu instead of the sign-in links to a signed-in person', () => {
@@ -96,6 +121,39 @@ describe('Header account area', () => {
       expect(panel()?.textContent).toContain('Sita Sharma');
       expect(panel()?.textContent).toContain('sita.sharma@example.com');
       expect(panel()?.querySelector('button')?.textContent).toContain('Sign out');
+    });
+
+    it('links to "My ads" and closes the menu when the link is used', () => {
+      const navigateByUrl = vi
+        .spyOn(TestBed.inject(Router), 'navigateByUrl')
+        .mockResolvedValue(true);
+      trigger()?.click();
+      fixture.detectChanges();
+      const ads = panel()?.querySelector<HTMLAnchorElement>('a[href="/listings/mine"]');
+
+      expect(ads?.textContent).toContain('My ads');
+      ads?.click();
+      fixture.detectChanges();
+
+      expect(navigateByUrl).toHaveBeenCalledTimes(1);
+      expect(panel()).toBeNull();
+    });
+
+    it('links to the profile page and closes the menu when the link is used', () => {
+      // This spec has no routes; only the request to navigate matters here.
+      const navigateByUrl = vi
+        .spyOn(TestBed.inject(Router), 'navigateByUrl')
+        .mockResolvedValue(true);
+      trigger()?.click();
+      fixture.detectChanges();
+      const profile = panel()?.querySelector<HTMLAnchorElement>('a[href="/profile"]');
+
+      expect(profile?.textContent).toContain('Your profile');
+      profile?.click();
+      fixture.detectChanges();
+
+      expect(navigateByUrl).toHaveBeenCalledTimes(1);
+      expect(panel()).toBeNull();
     });
 
     it('closes on a second click of the button', () => {

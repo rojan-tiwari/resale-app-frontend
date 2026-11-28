@@ -41,3 +41,10 @@ export interface ResetPasswordRequest {
   /** Sent as typed (never trimmed). */
   readonly newPassword: string;
 }
+
+/** Body of `PUT /api/v1/users/me/password`. */
+export interface ChangePasswordRequest {
+  /** Sent as typed (never trimmed). */
+  readonly currentPassword: string;
+  readonly newPassword: string;
+}

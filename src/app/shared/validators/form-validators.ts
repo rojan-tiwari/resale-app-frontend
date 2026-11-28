@@ -81,3 +81,19 @@ export function fieldsMatch(field: string, confirmField: string): ValidatorFn {
     return group.get(field)?.value === confirmValue ? null : { mismatch: true };
   };
 }
+
+/**
+ * A number with at most `places` decimals (a price: `1250.5` and `1250.50` pass, `1250.555` does not). Compares in whole
+ * hundredths so that floating-point noise (`10.1 * 100`) cannot reject a value that was typed correctly.
+ */
+export function maxDecimals(places: number): ValidatorFn {
+  return (control) => {
+    const value: unknown = control.value;
+    if (isEmpty(value) || typeof value !== 'number' || !Number.isFinite(value)) {
+      return null;
+    }
+    const factor = 10 ** places;
+    const scaled = Math.round(value * factor);
+    return Math.abs(scaled / factor - value) < 1e-9 ? null : { decimals: { max: places } };
+  };
+}

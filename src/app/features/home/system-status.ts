@@ -24,9 +24,16 @@ type StatusState =
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 id="status-heading" class="text-lg font-semibold text-slate-900">Platform status</h2>
-          <p class="mt-1 text-sm text-slate-600">Live check of the browser, API and database connection.</p>
+          <p class="mt-1 text-sm text-slate-600">
+            Live check of the browser, API and database connection.
+          </p>
         </div>
-        <button type="button" class="btn btn-secondary" (click)="refresh()" [disabled]="isLoading()">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="refresh()"
+          [disabled]="isLoading()"
+        >
           {{ isLoading() ? 'Checking…' : 'Check again' }}
         </button>
       </div>
@@ -54,8 +61,10 @@ type StatusState =
               <dd class="flex items-center gap-2 text-slate-700">
                 @if (s.info.database.status === 'UP') {
                   <span class="badge badge-success">Connected</span>
-                  PostgreSQL {{ s.info.database.version }} · {{ s.info.database.migrationsApplied }} migrations
-                  (latest V{{ s.info.database.latestMigration }})
+                  PostgreSQL {{ s.info.database.version }} ·
+                  {{ s.info.database.migrationsApplied }} migrations (latest V{{
+                    s.info.database.latestMigration
+                  }})
                 } @else {
                   <span class="badge badge-danger">Down</span>
                   The API cannot reach PostgreSQL
@@ -76,7 +85,9 @@ type StatusState =
             </div>
             <div class="flex flex-wrap items-center justify-between gap-2 py-3 last:pb-0">
               <dt class="font-medium text-slate-800">Server time</dt>
-              <dd class="text-slate-700">{{ s.info.serverTime | nepalDate: 'datetime' }} (Nepal time)</dd>
+              <dd class="text-slate-700">
+                {{ s.info.serverTime | nepalDate: 'datetime' }} (Nepal time)
+              </dd>
             </div>
           </dl>
         } @else {
@@ -112,7 +123,8 @@ export class SystemStatus {
     forkJoin({ info: this.systemApi.ping(), provinces: this.locationApi.provinces() })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ info, provinces }) => this.state.set({ kind: 'ready', info, provinceCount: provinces.length }),
+        next: ({ info, provinces }) =>
+          this.state.set({ kind: 'ready', info, provinceCount: provinces.length }),
         error: (error: unknown) => this.state.set({ kind: 'error', error: toApiError(error) }),
       });
   }

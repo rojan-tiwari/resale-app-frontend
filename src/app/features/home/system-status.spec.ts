@@ -22,7 +22,10 @@ describe('SystemStatus', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SystemStatus],
-      providers: [provideHttpClient(withInterceptors([problemDetailInterceptor])), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(withInterceptors([problemDetailInterceptor])),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
     controller = TestBed.inject(HttpTestingController);
   });
@@ -60,7 +63,10 @@ describe('SystemStatus', () => {
 
   it('flags a database that is down', async () => {
     const fixture = TestBed.createComponent(SystemStatus);
-    controller.expectOne(PING).flush({ ...info, database: { status: 'DOWN', version: null, migrationsApplied: 0, latestMigration: null } });
+    controller.expectOne(PING).flush({
+      ...info,
+      database: { status: 'DOWN', version: null, migrationsApplied: 0, latestMigration: null },
+    });
     controller.expectOne(PROVINCES).flush([]);
     await fixture.whenStable();
 
@@ -73,7 +79,10 @@ describe('SystemStatus', () => {
     const fixture = TestBed.createComponent(SystemStatus);
     controller
       .expectOne(PING)
-      .flush({ title: 'Service Unavailable', status: 503, detail: 'Database is unavailable.' }, { status: 503, statusText: 'Service Unavailable' });
+      .flush(
+        { title: 'Service Unavailable', status: 503, detail: 'Database is unavailable.' },
+        { status: 503, statusText: 'Service Unavailable' },
+      );
     controller.match(PROVINCES).forEach((req) => req.cancelled || req.flush([]));
     await fixture.whenStable();
 

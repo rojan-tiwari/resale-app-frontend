@@ -14,7 +14,8 @@ export interface District {
   readonly slug: string;
 }
 
-export type MunicipalityType = 'METROPOLITAN' | 'SUB_METROPOLITAN' | 'MUNICIPALITY' | 'RURAL_MUNICIPALITY';
+export type MunicipalityType =
+  'METROPOLITAN' | 'SUB_METROPOLITAN' | 'MUNICIPALITY' | 'RURAL_MUNICIPALITY';
 
 export interface Municipality {
   readonly id: number;

@@ -10,7 +10,10 @@ describe('problemDetailInterceptor', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(withInterceptors([problemDetailInterceptor])), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(withInterceptors([problemDetailInterceptor])),
+        provideHttpClientTesting(),
+      ],
     });
     http = TestBed.inject(HttpClient);
     controller = TestBed.inject(HttpTestingController);
@@ -31,12 +34,15 @@ describe('problemDetailInterceptor', () => {
     let caught: unknown;
     http.get('/api/v1/missing').subscribe({ error: (e: unknown) => (caught = e) });
 
-    controller
-      .expectOne('/api/v1/missing')
-      .flush(
-        { title: 'Not Found', status: 404, detail: 'Listing 42 does not exist', code: 'LISTING_NOT_FOUND' },
-        { status: 404, statusText: 'Not Found' },
-      );
+    controller.expectOne('/api/v1/missing').flush(
+      {
+        title: 'Not Found',
+        status: 404,
+        detail: 'Listing 42 does not exist',
+        code: 'LISTING_NOT_FOUND',
+      },
+      { status: 404, statusText: 'Not Found' },
+    );
 
     expect(caught).toBeInstanceOf(ApiError);
     expect((caught as ApiError).isNotFound).toBe(true);

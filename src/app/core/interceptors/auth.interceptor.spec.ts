@@ -20,6 +20,11 @@ const session = (accessToken: string): AuthResponse => ({
     email: 'sita@example.com',
     displayName: 'Sita Sharma',
     phone: null,
+    showPhone: false,
+    bio: null,
+    provinceId: null,
+    districtId: null,
+    municipalityId: null,
     createdAt: '2026-10-20T08:15:00Z',
     roles: ['ROLE_USER'],
   },
@@ -256,17 +261,15 @@ describe('authInterceptor', () => {
     let caught: unknown;
     http.post('/api/v1/auth/reset-password', {}).subscribe({ error: (e: unknown) => (caught = e) });
 
-    controller
-      .expectOne('/api/v1/auth/reset-password')
-      .flush(
-        {
-          title: 'Bad Request',
-          status: 400,
-          detail: 'This link is no good.',
-          code: 'INVALID_TOKEN',
-        },
-        { status: 400, statusText: 'Bad Request' },
-      );
+    controller.expectOne('/api/v1/auth/reset-password').flush(
+      {
+        title: 'Bad Request',
+        status: 400,
+        detail: 'This link is no good.',
+        code: 'INVALID_TOKEN',
+      },
+      { status: 400, statusText: 'Bad Request' },
+    );
 
     expect((caught as ApiError).isInvalidToken).toBe(true);
     controller.expectNone(REFRESH_URL);
