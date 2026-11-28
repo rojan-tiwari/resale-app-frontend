@@ -39,11 +39,21 @@ export class AuthApi {
 
   /** Exchanges the refresh-token cookie for a new access token. Fails with 401 when there is no valid session. */
   refresh(): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/refresh`, null, { headers: REQUESTED_WITH });
+    return this.http.post<AuthResponse>(`${this.baseUrl}/refresh`, null, {
+      headers: REQUESTED_WITH,
+    });
   }
 
   /** Ends the session on the server and clears the cookie. Always succeeds, even without a session. */
   logout(): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/logout`, null, { headers: REQUESTED_WITH });
+  }
+
+  /**
+   * Ends every session of the signed-in person, on every device. Unlike `logout` this is a protected call: the
+   * interceptor adds the access token, and it fails with 401 when there is none.
+   */
+  logoutAll(): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/logout-all`, null);
   }
 }

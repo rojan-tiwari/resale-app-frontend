@@ -126,6 +126,20 @@ describe('API services', () => {
       expect(result).toEqual(response);
     });
 
+    it('logoutAll posts to {base}/auth/logout-all and needs no cookie header: the access token identifies the caller', () => {
+      let completed = false;
+
+      TestBed.inject(AuthApi)
+        .logoutAll()
+        .subscribe({ complete: () => (completed = true) });
+      const http = controller.expectOne('/test/api/auth/logout-all');
+      expect(http.request.method).toBe('POST');
+      expect(http.request.headers.has('X-Requested-With')).toBe(false);
+      http.flush(null, { status: 204, statusText: 'No Content' });
+
+      expect(completed).toBe(true);
+    });
+
     it('logout posts to {base}/auth/logout with the custom header', () => {
       let completed = false;
 

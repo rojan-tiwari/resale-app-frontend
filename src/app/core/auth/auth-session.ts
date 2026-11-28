@@ -72,6 +72,14 @@ export class AuthSession {
   }
 
   /**
+   * Signs out of every device. Unlike `logout`, the screen only changes once the server has confirmed: if the call
+   * fails, the other devices are still signed in, and saying otherwise would be wrong. The error (an `ApiError`) is passed on.
+   */
+  logoutAll(): Observable<void> {
+    return this.api.logoutAll().pipe(tap(() => this.clear()));
+  }
+
+  /**
    * Finds out whether the browser still has a session (the refresh cookie) and starts it. Runs once at start-up;
    * calling it again does nothing. It never fails: the answer is `status`.
    */

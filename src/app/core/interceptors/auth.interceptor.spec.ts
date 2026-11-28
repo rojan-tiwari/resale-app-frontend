@@ -100,6 +100,33 @@ describe('authInterceptor', () => {
     request.flush({});
   });
 
+  it('keeps the token off the sign-out call but adds it to "sign out of all devices"', () => {
+    signIn();
+    http.post('/api/v1/auth/logout', null).subscribe();
+    http.post('/api/v1/auth/logout-all', null).subscribe();
+
+    const logout = controller.expectOne('/api/v1/auth/logout');
+    expect(logout.request.headers.has('Authorization')).toBe(false);
+    logout.flush(null, { status: 204, statusText: 'No Content' });
+    const logoutAll = controller.expectOne('/api/v1/auth/logout-all');
+    expect(logoutAll.request.headers.get('Authorization')).toBe('Bearer access-1');
+    logoutAll.flush(null, { status: 204, statusText: 'No Content' });
+  });
+
+  it('renews an expired token before "sign out of all devices" and repeats it', () => {
+    signIn();
+    let completed = false;
+    http.post('/api/v1/auth/logout-all', null).subscribe({ complete: () => (completed = true) });
+
+    controller.expectOne('/api/v1/auth/logout-all').flush(problem401, unauthorized);
+    controller.expectOne(REFRESH_URL).flush(session('access-2'));
+    const retry = controller.expectOne('/api/v1/auth/logout-all');
+    expect(retry.request.headers.get('Authorization')).toBe('Bearer access-2');
+    retry.flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(completed).toBe(true);
+  });
+
   it('renews an expired token once and repeats the call with the new one', () => {
     signIn();
     let result: unknown;

@@ -1,9 +1,10 @@
 import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthSession } from '../../core/auth/auth-session';
+import { toApiError } from '../../core/models/api-error';
 
 /**
- * The signed-in person's menu in the header: their name, email and "Sign out". A disclosure button (not an ARIA menu):
+ * The signed-in person's menu in the header: their name, email, "Sign out" and "Sign out of all devices". A disclosure button (not an ARIA menu):
  * it opens a small panel that stays in the tab order after the button. Escape, a click outside or tabbing away closes it.
  */
 @Component({
@@ -22,7 +23,7 @@ import { AuthSession } from '../../core/auth/auth-session';
       class="btn btn-ghost"
       aria-controls="user-menu-panel"
       [attr.aria-expanded]="open()"
-      (click)="open.set(!open())"
+      (click)="toggle()"
     >
       <span
         class="grid size-7 shrink-0 place-items-center rounded-full bg-brand-100 text-sm font-semibold text-brand-800"
@@ -40,6 +41,21 @@ import { AuthSession } from '../../core/auth/auth-session';
         <button type="button" class="btn btn-secondary mt-4 w-full" (click)="signOut()">
           Sign out
         </button>
+        <button
+          type="button"
+          class="btn btn-ghost mt-1 w-full"
+          aria-describedby="user-menu-all-hint"
+          [disabled]="signingOutAll()"
+          (click)="signOutAll()"
+        >
+          {{ signingOutAll() ? 'Signing out…' : 'Sign out of all devices' }}
+        </button>
+        <p id="user-menu-all-hint" class="mt-1 px-1 text-xs text-slate-600">
+          Ends your session on every phone and computer, including this one.
+        </p>
+        @if (error(); as message) {
+          <p class="mt-3 text-sm text-red-700" role="alert">{{ message }}</p>
+        }
       </div>
     }
   `,
@@ -51,9 +67,17 @@ export class UserMenu {
   private readonly trigger = viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
 
   protected readonly open = signal(false);
+  protected readonly signingOutAll = signal(false);
+  /** Why "Sign out of all devices" did not work, so the person knows the other devices may still be signed in. */
+  protected readonly error = signal<string | null>(null);
   protected readonly initial = computed(() =>
     (this.session.user()?.displayName ?? '').trim().charAt(0).toUpperCase(),
   );
+
+  protected toggle(): void {
+    this.error.set(null);
+    this.open.update((isOpen) => !isOpen);
+  }
 
   protected closeOnOutsideClick(event: Event): void {
     if (this.open() && !this.host.nativeElement.contains(event.target as Node)) {
@@ -80,5 +104,25 @@ export class UserMenu {
     this.session.logout().subscribe();
     // The page the person was on may need a sign-in, and guards only run on navigation, so always go home.
     void this.router.navigateByUrl('/');
+  }
+
+  protected signOutAll(): void {
+    if (this.signingOutAll()) {
+      return;
+    }
+    this.signingOutAll.set(true);
+    this.error.set(null);
+    this.session.logoutAll().subscribe({
+      next: () => {
+        this.signingOutAll.set(false);
+        this.open.set(false);
+        void this.router.navigateByUrl('/');
+      },
+      // The screen stays as it is: the other devices are still signed in, and the person should know.
+      error: (error: unknown) => {
+        this.signingOutAll.set(false);
+        this.error.set(`Could not sign out of all devices. ${toApiError(error).message}`);
+      },
+    });
   }
 }
