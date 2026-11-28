@@ -91,7 +91,21 @@ describe('App shell and routing', () => {
     expect(link?.textContent).toContain('Create account');
   });
 
+  it('lazy-loads the forgot-password page at "/auth/forgot-password"', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/auth/forgot-password');
 
+    const page = harness.routeNativeElement as HTMLElement;
+    expect(page.querySelector('h1')?.textContent).toContain('Forgot your password?');
+    expect(page.querySelector('form')).not.toBeNull();
+  });
+
+  it('opens the reset-password page for anyone, with or without a link token', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/auth/reset-password');
+
+    expect((harness.routeNativeElement as HTMLElement).textContent).toContain('This link does not work');
+  });
 
 
 

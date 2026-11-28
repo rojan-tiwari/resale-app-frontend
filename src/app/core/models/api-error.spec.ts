@@ -59,3 +59,19 @@ describe('toApiError', () => {
     expect(toApiError('weird').code).toBe('UNEXPECTED');
   });
 });
+
+describe('ApiError helpers for rate limits and reset links', () => {
+  const make = (status: number, code?: string) =>
+    new ApiError({ status, title: 't', message: 'm', ...(code !== undefined && { code }) });
+
+  it('recognises a rate limit by its status', () => {
+    expect(make(429, 'TOO_MANY_REQUESTS').isTooManyRequests).toBe(true);
+    expect(make(400).isTooManyRequests).toBe(false);
+  });
+
+  it('recognises a refused reset link by its code, not by the status alone', () => {
+    expect(make(400, 'INVALID_TOKEN').isInvalidToken).toBe(true);
+    expect(make(400, 'VALIDATION_FAILED').isInvalidToken).toBe(false);
+    expect(make(400).isInvalidToken).toBe(false);
+  });
+});
