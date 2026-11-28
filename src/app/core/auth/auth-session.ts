@@ -22,6 +22,9 @@ import { AuthApi } from '../services/auth-api';
  */
 export type SessionStatus = 'unknown' | 'anonymous' | 'authenticated';
 
+/** The role that unlocks the admin area. For showing or hiding UI only: the server checks it on every request. */
+export const ADMIN_ROLE = 'ROLE_ADMIN';
+
 /**
  * Who is signed in. This is the single place that knows the access token.
  *
@@ -46,6 +49,7 @@ export class AuthSession {
   readonly user = this.userState.asReadonly();
   readonly status = this.statusState.asReadonly();
   readonly isAuthenticated = computed(() => this.statusState() === 'authenticated');
+  readonly isAdmin = computed(() => this.userState()?.roles.includes(ADMIN_ROLE) ?? false);
 
   /** The current access token, for the interceptor. Not reactive on purpose: nothing should render it. */
   accessToken(): string | null {

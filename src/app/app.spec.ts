@@ -90,4 +90,17 @@ describe('App shell and routing', () => {
     const link = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('app-header a[href="/auth/register"]');
     expect(link?.textContent).toContain('Create account');
   });
+
+
+
+
+
+  it('shows the notification area in the shell, ready to announce messages', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+
+    const toasts = (fixture.nativeElement as HTMLElement).querySelector('app-toasts');
+    expect(toasts?.querySelector('[role="status"]')).not.toBeNull();
+    expect(toasts?.querySelector('[role="alert"]')).not.toBeNull();
+  });
 });
